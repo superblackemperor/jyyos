@@ -82,7 +82,7 @@ static int cmd_help(char *args) {
 static int cmd_si(char *args){
 	//judge if exit argument
 	char *arg = strtok(NULL," ");
-	int step_num=1;
+	uint64_t step_num=1;
 	if(arg!=NULL){
 	char *end;
 	double tmp=strtod(arg,&end);
@@ -95,22 +95,9 @@ static int cmd_si(char *args){
 		}else
 		step_num =(int)tmp;	
 	}
-	printf("step %d\n",step_num);
+	printf("step %ld\n",step_num);
 	//cpu exe step_numn
-	
-	Decode s;
-		
-	switch (nemu_state.state) {
-	case NEMU_RUNNING: nemu_state.state = NEMU_STOP; break;
-	case NEMU_END: case NEMU_ABORT:
-	Log("nemu: %s at pc = " FMT_WORD,
-	(nemu_state.state == NEMU_ABORT ? ASNI_FMT("ABORT", ASNI_FG_RED) :
-	(nemu_state.halt_ret == 0 ? ASNI_FMT("HIT GOOD TRAP", ASNI_FG_GREEN) :			 ASNI_FMT("HIT BAD TRAP", ASNI_FG_RED))),
-	   nemu_state.halt_pc);
-	// fall through
-	 case NEMU_QUIT: statistic();
-      	}
-		
+	cpu_exec_step(step_num);
 	return 0;
 
 
