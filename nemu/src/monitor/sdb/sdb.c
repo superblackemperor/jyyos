@@ -4,6 +4,7 @@
 #include <readline/history.h>
 #include "sdb.h"
 #include <stdlib.h>
+#include "memory/paddr.h"
 static int is_batch_mode = false;
 
 void init_regex();
@@ -43,6 +44,8 @@ static int cmd_si(char *args);//single step
 
 static int cmd_info(char *args);
 
+static int cmd_x(char *args);
+
 static struct {
   const char *name;
   const char *description;
@@ -52,7 +55,8 @@ static struct {
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
   { "si", "step a single command",cmd_si },
-  { "info","print infomation of register(r) or watchpoint(w)",cmd_info}
+  { "info","print infomation of register(r) or watchpoint(w)",cmd_info},
+  { "x","scanf 4*N byte from EXPR in memery (x N EXPR)",cmd_x}
   /* TODO: Add more commands */
 
 };
@@ -120,6 +124,48 @@ static int cmd_info(char *args){
 	return 0;
 }
 
+static int cmd_x(char *args){
+	char *arg[2];
+	arg[0]=strtok(NULL," ");
+	if(arg[0]==NULL){
+	printf("please offer argument \"N\"\n");
+	return 0;
+	}
+	char *end=NULL;
+	double tmpN = strtod(arg[0],&end);
+	if(tmpN==0){printf("N can not be 0\n");return 0;}
+	 if((tmpN-(int)tmpN)!=0){printf("EXPR can not be X.X\n");return 0;}
+	if(strcmp(end,"")==1){printf("please \"N\"\n");return 0;}
+	 int N=(int)tmpN;
+	arg[1]=strtok(NULL," ");
+	 long int EXPR;
+	if(arg[1]==NULL){
+	//printf("please off argument \"EXPR\"\n");//可以缺省，表示当前指向address
+	int step=cpu.pc-2147483648;
+	EXPR=0x80000000+step;
+	}else{                        
+	 end=NULL;
+	EXPR=strtol(arg[1],&end,16);
+	if(strcmp(end,"")==1){printf("please \"EXPR 后不能有非法字符\"\n");return 0;}	
+	}
+	int n=0;
+	for(;n<N;n++){
+	 int i=3;
+	 printf("memery 0X%lx~0X%lx : ",EXPR,EXPR+3);
+	 for(;i>=0;i--){
+	paddr_t pa=*(guest_to_host(EXPR+i));
+	if(pa<16)//个位数	
+	printf("0%x",pa);
+	else
+	printf("%x",pa);
+	 }
+	 EXPR+=4;
+	 printf("\n");
+ 	}	 
+	return 0;
+	
+	//
+}
 void sdb_set_batch_mode() {
   is_batch_mode = true;
 }
