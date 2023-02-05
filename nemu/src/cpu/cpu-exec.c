@@ -128,7 +128,9 @@ void cpu_exec_step(uint64_t n){
  printf("Program execution has ended. To restart the program, exit NEMU and run again.\n");
 	 return;
 	 default: nemu_state.state = NEMU_RUNNING;
-					       }
+		}
+	
+	uint64_t timer_start = get_time();
 
 	Decode s;
   	for (;n > 0; n --) {
@@ -138,6 +140,10 @@ void cpu_exec_step(uint64_t n){
 	if (nemu_state.state != NEMU_RUNNING) break;
 	 IFDEF(CONFIG_DEVICE, device_update());
 			        }
+
+	uint64_t timer_end = get_time();
+
+	g_timer += timer_end -timer_start;
 
 switch (nemu_state.state) {
 	case NEMU_RUNNING: nemu_state.state = NEMU_STOP; break;

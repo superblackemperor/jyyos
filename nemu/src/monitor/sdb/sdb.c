@@ -41,6 +41,8 @@ static int cmd_help(char *args);
 
 static int cmd_si(char *args);//single step
 
+static int cmd_info(char *args);
+
 static struct {
   const char *name;
   const char *description;
@@ -49,7 +51,8 @@ static struct {
   { "help", "Display informations about all supported commands", cmd_help },
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
-  { "si", "step a single command",cmd_si }
+  { "si", "step a single command",cmd_si },
+  { "info","print infomation of register(r) or watchpoint(w)",cmd_info}
   /* TODO: Add more commands */
 
 };
@@ -101,6 +104,20 @@ static int cmd_si(char *args){
 	return 0;
 
 
+}
+
+static int cmd_info(char *args){
+	char*arg=strtok(NULL," ");
+	//no argument:print all register and watchpoint 
+	if(arg==NULL)
+	isa_reg_display();
+	//argument is r:print all register
+	else if(strcmp(arg,"r")==0)
+	isa_reg_display();
+	else printf("your argument is wrong\n");
+	//regument is w:print all watchpoint
+	
+	return 0;
 }
 
 void sdb_set_batch_mode() {
