@@ -11,9 +11,11 @@ const char *regs[] = {
 
 void isa_reg_display() {
 	int i=0;
-	for(;i<32;i++)
-	printf("register %s = %d;<=====>",regs[i],cpu.gpr[i]._32);
-	printf("\nPC = %ud\n",cpu.pc);
+	for(;i<32;i++){
+	printf(" <%s=%d> ",regs[i],cpu.gpr[i]._32);
+	if((i+1)%8==0)
+	printf("\n");
+	}printf("\nPC = %ud\n",cpu.pc);
 }
 
 word_t isa_reg_str2val(const char *s, bool *success) {
