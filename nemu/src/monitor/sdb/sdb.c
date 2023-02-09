@@ -5,13 +5,14 @@
 #include "sdb.h"
 #include <stdlib.h>
 #include "memory/paddr.h"
+#include <malloc.h>
 static int is_batch_mode = false;
 
 void init_regex();
 void init_wp_pool();
 
 /* We use the `readline' library to provide more flexibility to read from stdin. */
-static char* rl_gets() {
+/*static char* rl_gets() {
   static char *line_read = NULL;
 
   if (line_read) {
@@ -27,7 +28,7 @@ static char* rl_gets() {
 
   return line_read;
 }
-
+*/
 static int cmd_c(char *args) {
   cpu_exec(-1);
   return 0;
@@ -175,18 +176,61 @@ void sdb_mainloop() {
     cmd_c(NULL);
     return;
   }
-
+  int right_num=0,all_num=0;
+  FILE *fp=fopen("/home/swxgg/ics2021/nemu/src/input.txt","r");
+	assert(fp!=NULL);
+	char*ans=(char*)malloc(10);
+	char*exp=(char*)malloc(320);
+	char tmp;
+	char t[2]={'\0'};
+	bool c;
+	while(1){
+	c=false;	
+	memset(ans,0,10);
+	memset(exp,0,320);
+	while((tmp=fgetc(fp))!=' '){
+		t[0]=tmp;
+		if(strlen(ans)<9)
+		strcat(ans,t);
+		else c=true;
+	}	
+	while((tmp=fgetc(fp))!='\n'){
+		t[0]=tmp;
+		if(strlen(exp)<319)
+		strcat(exp,t);
+		else c=true;
+	}
+	if(fgetc(fp)==EOF)break;
+	fseek(fp,-1,SEEK_CUR);
+	if(c==true)continue;
+	printf("%s %s\n",ans,exp);
+	uint32_t answer=atoi(ans);
+	bool flag=true;
+       all_num++; 
+       	uint32_t ret=expr(exp,&flag);
+        if(flag==false)
+        printf("false\n");
+        //else //printf("ret=%d\n",ret);
+	if(ret==answer)
+		right_num++;
+	}
+	printf("(right_num/all_num):%d/%d\njust:%f%%\n",
+	right_num,all_num,(float)right_num/(float)all_num*100);
+	fclose(fp);
+	free(ans);
+	free(exp);
+	/*
   for (char *str; (str = rl_gets()) != NULL; ) {
-    char *str_end = str + strlen(str);
-
+	  char *str_end = str + strlen(str);
+*/
     /* extract the first token as the command */
-    char *cmd = strtok(str, " ");
+  /*  char *cmd = strtok(str, " ");
     if (cmd == NULL) { continue; }
-
+*/
     /* treat the remaining string as the arguments,
      * which may need further parsing
      */
-    char *args = cmd + strlen(cmd) + 1;
+  /*  char *args = cmd + strlen(cmd) + 1;
     if (args >= str_end) {
       args = NULL;
     }
@@ -205,7 +249,7 @@ void sdb_mainloop() {
     }
 
     if (i == NR_CMD) { printf("Unknown command '%s'\n", cmd); }
-  }
+  }*/
 }
 
 void init_sdb() {

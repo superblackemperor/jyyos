@@ -1,12 +1,20 @@
 #include <isa.h>
-
+#include <string.h>
 /* We use the POSIX regex functions to process regular expressions.
  * Type 'man regex' for more information about POSIX regex functions.
  */
 #include <regex.h>
+#include <macro.h>
+void mystrcpy(char*dst,unsigned int len,char *in){
+	for(int i=0;i<len;i++)
+		dst[i]=in[i];
+}
 
+uint32_t eval(int p,int  q);
+bool check_parentheses(int p,int q);
+uint32_t mainop_posi(int p,int q);
 enum {
-  TK_NOTYPE = 256, TK_EQ,
+  TK_NOTYPE = 256, TK_EQ,TK_NUM
 
   /* TODO: Add more token types */
 
@@ -20,7 +28,12 @@ static struct rule {
   /* TODO: Add more rules.
    * Pay attention to the precedence level of different rules.
    */
-
+	{"\\)",')'},
+	{"\\(",'('},
+   {"(0|[1-9][0-9]*)",TK_NUM},
+  {"\\/",'/'},
+  {"\\*",'*'},
+  {"\\-",'-'},
   {" +", TK_NOTYPE},    // spaces
   {"\\+", '+'},         // plus
   {"==", TK_EQ},        // equal
@@ -52,14 +65,14 @@ typedef struct token {
   char str[32];
 } Token;
 
-static Token tokens[32] __attribute__((used)) = {};
+static Token tokens[320] __attribute__((used)) = {};
 static int nr_token __attribute__((used))  = 0;
 
 static bool make_token(char *e) {
   int position = 0;
   int i;
   regmatch_t pmatch;
-
+  memset(tokens,0,sizeof(Token)*320);
   nr_token = 0;
 
   while (e[position] != '\0') {
@@ -78,11 +91,20 @@ static bool make_token(char *e) {
          * to record the token in the array `tokens'. For certain types
          * of tokens, some extra actions should be performed.
          */
-
         switch (rules[i].token_type) {
-          default: TODO();
-        }
-
+		case TK_NUM:
+			tokens[nr_token].type=rules[i].token_type;
+			if(substr_len<32)
+			mystrcpy(tokens[nr_token].str,substr_len,substr_start);
+			else
+			printf("tokens[%d].str overflow\n",nr_token);
+			nr_token++;
+			break;
+		case TK_NOTYPE:break;
+		default: 
+		tokens[nr_token++].type=rules[i].token_type;
+        	break;
+	}
         break;
       }
     }
@@ -102,9 +124,89 @@ word_t expr(char *e, bool *success) {
     *success = false;
     return 0;
   }
-
+	//提前检测表达式的括号正确性
+	int flag=0;
+	for(int i=0;i<nr_token;i++){
+		if(tokens[i].type=='(')
+		flag++;
+		 if(tokens[i].type==')')
+		flag--;
+		if(flag<0)
+		assert(0);
+	}if(flag!=0)assert(0);
   /* TODO: Insert codes to evaluate the expression. */
-  TODO();
+	return eval(0,nr_token-1);
+}
+uint32_t eval(int p,int  q) {
+  if (p > q) {
+    /* Bad expression */
+	return -1;
+  }
+  else if (p == q) {
+    /* Single token.
+     * For now this token should be a number.
+     * Return the value of the number.
+     */char *end;
+	double tmp=strtod(tokens[p].str,&end);
+	return (int)tmp;
+  }
+  else if (check_parentheses(p, q) == true) {
+    /* The expression is surrounded by a matched pair of parentheses.
+     * If that is the case, just throw away the parentheses.
+     */
+    return eval(p + 1, q - 1);
+  }
+  else {
+    //the position of 主运算符 in the token expression;
+    int op=mainop_posi(p,q);
+	int val1 = eval(p, op - 1);
+    int val2 = eval(op + 1, q);
 
-  return 0;
+    switch (tokens[op].type) {
+      case '+': return val1 + val2;
+      case '-': return val1-val2;
+      case '*': return val1*val2;
+      case '/': return (uint32_t)(val1/val2);
+      default: assert(0);
+    }
+  }
+}
+bool check_parentheses(int p,int q){
+	if(tokens[p].type=='('&&tokens[q].type==')')
+	{
+	int flag=0;
+        for(int i=p+1;i<q;i++){
+                if(tokens[i].type=='(')
+                flag++;
+                 if(tokens[i].type==')')
+                flag--;
+                if(flag<0)
+                return false;
+	}return true;
+	}else return false;
+} 
+uint32_t mainop_posi(int p,int q){
+	int ret=p;
+	int i=p;
+	for(;i<=q;){
+	if(tokens[i].type=='+'||tokens[i].type=='-')
+	 {ret=i++;
+	continue;}
+	if(tokens[i].type=='*'||tokens[i].type=='/')
+	{
+	if(tokens[ret].type!='+'&&tokens[ret].type!='-')
+	ret=i++;
+	}
+	if(tokens[i].type=='('){//要找到括号对
+	int flag=1;
+	while(flag!=0)//策略是有多少左括号就有多少右括号
+	{
+	i++;
+	if(tokens[i].type=='(')flag++;
+	if(tokens[i].type==')')flag--;
+	if(i>q)assert(0);
+	}i++;
+	}else i++;
+  }
+	return ret;
 }
