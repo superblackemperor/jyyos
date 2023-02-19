@@ -55,9 +55,9 @@ static struct {
   { "help", "Display informations about all supported commands", cmd_help },
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
-  { "si", "step a single command",cmd_si },
-  { "info","print infomation of register(r) or watchpoint(w)",cmd_info},
-  { "x","scanf 4*N byte from EXPR in memery (x N EXPR)",cmd_x}
+  { "si", "step a single command with \"si N\"(if there is no N,N=1)",cmd_si },
+  { "info","print infomation of register(r) or watchpoint(w) with \"info ...\"\nno argument:print all register and watchpoint\nargument is r:print all register\nregument is w:print all watchpoint",cmd_info},
+  { "x","scanf 4*N(32*N bit) from EXPR in memery (x N EXPR)",cmd_x}
   /* TODO: Add more commands */
 
 };
@@ -208,6 +208,8 @@ int right_num=0,all_num=0;
         //else //printf("ret=%d\n",ret);
         if(ret==answer)
                 right_num++;
+	else {
+	printf("ret:%d answer:%d\n",ret,answer);/*getchar();*/}
         }
         printf("(right_num/all_num):%d/%d\njust:%f%%\n",
         right_num,all_num,(float)right_num/(float)all_num*100);
@@ -220,7 +222,7 @@ void sdb_mainloop() {
     cmd_c(NULL);
     return;
   }
-	//test_expr();//测试表达式结果
+	test_expr();//测试表达式结果
 	
   for (char *str; (str = rl_gets()) != NULL; ) {
 	  char *str_end = str + strlen(str);

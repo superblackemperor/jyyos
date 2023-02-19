@@ -5,16 +5,20 @@
  */
 #include <regex.h>
 #include <macro.h>
+#include <malloc.h>
+#include <math.h>
 void mystrcpy(char*dst,unsigned int len,char *in){
 	for(int i=0;i<len;i++)
 		dst[i]=in[i];
 }
-
+bool isDeRefer();
 uint32_t eval(int p,int  q);
 bool check_parentheses(int p,int q);
 uint32_t mainop_posi(int p,int q);
+void strHtoD(char*str);
+bool strREGtoD(char*str);
 enum {
-  TK_NOTYPE = 256, TK_EQ,TK_NUM
+  TK_NOTYPE = 256,TK_NUM_H,TK_NUM,TK_REG,TK_EQ,TK_NOEQ,TK_AND,TK_DE
 
   /* TODO: Add more token types */
 
@@ -30,14 +34,19 @@ static struct rule {
    */
 	{"\\)",')'},
 	{"\\(",'('},
+    {"(0x(0|[1-9a-fA-F][0-9a-fA-F]*))",TK_NUM_H},
    {"(0|[1-9][0-9]*)",TK_NUM},
+   {"\\$[$]{0,1}[a-zA-Z0-9]+",TK_REG},
   {"\\/",'/'},
   {"\\*",'*'},
   {"\\-",'-'},
   {" +", TK_NOTYPE},    // spaces
   {"\\+", '+'},         // plus
   {"==", TK_EQ},        // equal
+  {"!=",TK_NOEQ},
+  {"&&",TK_AND}
 };
+
 
 #define NR_REGEX ARRLEN(rules)
 
@@ -92,15 +101,45 @@ static bool make_token(char *e) {
          * of tokens, some extra actions should be performed.
          */
         switch (rules[i].token_type) {
+		case TK_NUM_H:
+		case TK_REG:
 		case TK_NUM:
 			tokens[nr_token].type=rules[i].token_type;
+			//寄存器和16进制数先转换为10进制数
 			if(substr_len<32)
+			{
 			mystrcpy(tokens[nr_token].str,substr_len,substr_start);
-			else
-			printf("tokens[%d].str overflow\n",nr_token);
-			nr_token++;
+			
+			if(tokens[nr_token].type==TK_NUM_H){
+			strHtoD(tokens[nr_token].str);//16进制数先转换为10进制数
+			tokens[nr_token].type=TK_NUM;}
+			
+			if(tokens[nr_token].type==TK_REG){//寄存器
+				if(strREGtoD(tokens[nr_token].str)==false)
+				{printf("没有找到寄存器\n");return false;}
+			tokens[nr_token].type=TK_NUM;}
+
+			//无论是寄存器还是16进制数，都已经在这提前转换为10进制数了
+
+			if(isDeRefer()){//判断一下前面是否有解引用,非解引用什么都不用做
+			tokens[nr_token-1].type=TK_NUM;
+			strcpy(tokens[nr_token-1].str,"1");//暂时不明白解引用要解什么出来，先形式主义一下用1代替	
+			memset(&tokens[nr_token],0,sizeof(Token));
+			nr_token--;//与*合并后抛弃本nr_token的tokens	
+			}
+			}else
+			{printf("tokens[%d].str overflow\n",nr_token);
+			return false;
+			}nr_token++;
 			break;
 		case TK_NOTYPE:break;
+		case '*'://判断是否为解引用
+		if(nr_token==0||tokens[nr_token-1].type=='('||(tokens[nr_token-1].type>=42&&tokens[nr_token-1].type<=47))//偷懒了一下，+/-*的ascii码在42到47
+		tokens[nr_token].type=TK_DE;
+		else//非解引用
+		tokens[nr_token].type='*';
+		nr_token++;
+		break;
 		default: 
 		tokens[nr_token++].type=rules[i].token_type;
         	break;
@@ -166,7 +205,12 @@ uint32_t eval(int p,int  q) {
       case '+': return val1 + val2;
       case '-': return val1-val2;
       case '*': return val1*val2;
-      case '/': return (uint32_t)(val1/val2);
+      case '/': 
+		if(val2==0)return (uint32_t)-1;
+		return (uint32_t)(val1/val2);
+      case TK_EQ:return val1==val2;
+	case TK_NOEQ:return val1!=val2;
+	case TK_AND:return val1&&val2;
       default: assert(0);
     }
   }
@@ -189,12 +233,17 @@ uint32_t mainop_posi(int p,int q){
 	int ret=p;
 	int i=p;
 	for(;i<=q;){
+	if(tokens[i].type>=TK_EQ&&tokens[i].type<=TK_AND)
+	{ret=i++;
+	}
 	if(tokens[i].type=='+'||tokens[i].type=='-')
-	 {ret=i++;
-	continue;}
+	{
+	if(tokens[ret].type<TK_EQ||tokens[ret].type>TK_AND)
+	ret=i++;
+	}
 	if(tokens[i].type=='*'||tokens[i].type=='/')
 	{
-	if(tokens[ret].type!='+'&&tokens[ret].type!='-')
+	if(tokens[ret].type!='+'&&tokens[ret].type!='-'&&(tokens[ret].type<TK_EQ||tokens[ret].type>TK_AND))
 	ret=i++;
 	}
 	if(tokens[i].type=='('){//要找到括号对
@@ -209,4 +258,77 @@ uint32_t mainop_posi(int p,int q){
 	}else i++;
   }
 	return ret;
+}
+
+/*int pow(int di,int mi){
+	if(mi==0)return 1;
+	int ret=di;
+	for(int i=1;i<mi;i++)
+	ret*=di;
+	return ret;
+}*/
+int strHtoint(char*str){
+	int ret=0;
+	int len=strlen(str);
+	for(int i=len-1;i>=2;i--){
+	if(str[i]>=48&&str[i]<=57)
+	ret+=pow(16,(len-1-i))*(str[i]-48);//0~9
+	if(str[i]>=65&&str[i]<=70)
+	ret+=pow(16,(len-1-i))*(str[i]-55);//A~F
+	if(str[i]>=97&&str[i]<=102)
+	ret+=pow(16,(len-1-i))*(str[i]-87);//a~f
+	}
+	return ret;
+}
+void int2strD(char*str,int num){
+	if(num==0)strcpy(str,"0");
+	char*tmp=(char*)malloc(50);//字符stack
+	memset(tmp,0,50);
+	char cat[2]={'\0'};
+	while(num!=0){
+	int mod=num%10;
+	cat[0]=(char)(mod+48);
+	strcat(tmp,cat);
+	num-=mod;
+	num/=10;
+	}
+	//双指针字符串反转
+	int len=strlen(tmp);
+	for(int i=0,j=len-1;i<j;i++,j--)
+	{
+		char x=tmp[i];
+		tmp[i]=tmp[j];
+		tmp[j]=x;
+	}	
+	strcpy(str,tmp);
+	free(tmp);
+}
+void strHtoD(char*str){
+	int num=strHtoint(str);
+	int2strD(str,num);
+}
+bool strREGtoD(char*str){
+	extern const char *regs[];
+	bool flag=false;
+	//先判断是否为PC
+	if(strcmp("PC",str+1)==0){
+	int num=cpu.pc;
+	int2strD(str,num);
+	return true;
+	}
+	int i=0;
+	for(;i<32;i++)
+	if(0==strcmp(regs[i],str+1))
+	{flag=true;break;}
+	if(flag==false)return flag;
+	int num=cpu.gpr[i]._32;
+	int2strD(str,num);
+	return flag;
+}
+bool isDeRefer(){
+	if(nr_token==0)//数字放在首位，必没有解引用
+	return false;
+	if(tokens[nr_token-1].type==TK_DE)
+		return true;
+	else return false;
 }

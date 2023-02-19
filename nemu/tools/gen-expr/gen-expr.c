@@ -24,6 +24,11 @@ uint32_t choose(uint32_t n){
 
 static void gen_num(){
 	char tmp[2]={};
+	switch(choose(2)){//是否生成16进制数
+	case 0:
+		strcat(buf,"0x");break;
+		default:break;
+	}
 	int end=0;
 	switch(choose(10)){
 	case 0:
@@ -51,22 +56,25 @@ static void gen(char *p){
 	strcat(buf, p);
 }
 static void gen_rand_op(){
-	char tmp[2]={};
-	switch(choose(4)){
+	char tmp[3]={};
+	switch(choose(7)){
 	case 0:*tmp='+';break;
 	case 1:*tmp='-';break;
 	case 2:*tmp='*';break;
+	case 3:tmp[0]='=';tmp[1]='=';break;
+	case 4:tmp[0]='!';tmp[1]='=';break;
+	case 5:tmp[0]='&';tmp[1]='&';break;
 	default:*tmp='/';break;
 	}
 	strcat(buf,tmp);
 }
-static void gen_notype(bool n){
+static void gen_notype(bool  n){
 	if(n==false)return ;
 	strcat(buf,"   ");
 
 }
 static void gen_rand_expr() {
-	gen_notype(choose(1));
+	gen_notype(choose(2));
 	int s=choose(3);
 	gen_expr_num++;
 	if(gen_expr_num>1000)
