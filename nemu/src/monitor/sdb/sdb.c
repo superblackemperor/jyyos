@@ -139,12 +139,12 @@ static int cmd_info(char *args){
 }
 
 static int cmd_p(char *args){
-	char *arg=strtok(NULL," ");
-	if(arg==NULL)return 0;
+	//char *arg=strtok(NULL," ");
+	if(args==NULL)return 0;
 	bool flag=true;
-	uint32_t EXPR=expr(arg,&flag);
+	uint32_t EXPR=expr(args,&flag);
 	if(flag==false){printf("EXPR wrong\n");return 0;}
-	printf("%s = %u\n",arg,EXPR);
+	printf("%s = %u\n",args,EXPR);
 	return 0;
 }
 
@@ -163,7 +163,7 @@ static int cmd_x(char *args){
 	if(strcmp(end,"")==1){printf("please \"N\"\n");return 0;}
 	 int N=(int)tmpN;
 
-	arg[1]=strtok(NULL," ");
+	arg[1]=args+strlen(arg[0]);
 	 long int EXPR;
 	if(arg[1]==NULL){
 	//printf("please off argument \"EXPR\"\n");//可以缺省，表示当前指向address
@@ -198,11 +198,11 @@ static int cmd_x(char *args){
 }
 
 static int cmd_w(char *args){
-	char *arg=strtok(NULL," ");	
-	if(arg==NULL){printf("please offer EXPR\n");return 0;}
+	//char *arg=strtok(NULL," ");	
+	if(args==NULL){printf("please offer EXPR\n");return 0;}
 	
 	
-	if(init_wp(arg)==false)return 0;
+	if(init_wp(args)==false)return 0;
 	
 
 	

@@ -187,7 +187,7 @@ uint32_t eval(int p,int  q) {
      * Return the value of the number.
      */char *end;
 	double tmp=strtod(tokens[p].str,&end);
-	return (uint)tmp;
+	return (uint32_t)tmp;
   }
   else if (check_parentheses(p, q) == true) {
     /* The expression is surrounded by a matched pair of parentheses.
@@ -268,7 +268,7 @@ uint32_t mainop_posi(int p,int q){
 	return ret;
 }*/
 int strHtoint(char*str){
-	int ret=0;
+	uint32_t ret=0;
 	int len=strlen(str);
 	for(int i=len-1;i>=2;i--){
 	if(str[i]>=48&&str[i]<=57)
@@ -304,7 +304,7 @@ void int2strD(char*str,uint32_t num){
 	free(tmp);
 }
 void strHtoD(char*str){
-	int num=strHtoint(str);
+	uint32_t num=strHtoint(str);
 	int2strD(str,num);
 }
 bool strREGtoD(char*str){
@@ -312,7 +312,7 @@ bool strREGtoD(char*str){
 	bool flag=false;
 	//先判断是否为PC
 	if(strcmp("PC",str+1)==0){
-	int num=cpu.pc;
+	uint32_t num=cpu.pc;
 	int2strD(str,num);
 	return true;
 	}
@@ -321,7 +321,7 @@ bool strREGtoD(char*str){
 	if(0==strcmp(regs[i],str+1))
 	{flag=true;break;}
 	if(flag==false)return flag;
-	int num=cpu.gpr[i]._32;
+	uint32_t num=cpu.gpr[i]._32;
 	int2strD(str,num);
 	return flag;
 }
