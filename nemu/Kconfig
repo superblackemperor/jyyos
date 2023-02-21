@@ -54,6 +54,19 @@ config MODE_SYSTEM
   bool "System mode"
   help
     Support full-system functionality, including privileged instructions, MMU and devices.
+
+endchoice
+
+choice
+  prompt "enable watch ponit"
+  default NOWATCHPOINT
+	
+config WATCHPOINT
+  bool "enable watch ponit"
+
+config NOWATCHPOINT  
+	bool "no enable watch point"
+
 endchoice
 
 choice
