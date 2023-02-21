@@ -45,7 +45,13 @@ static int cmd_si(char *args);//single step
 
 static int cmd_info(char *args);
 
+static int cmd_p(char *args);
+
 static int cmd_x(char *args);
+
+static int cmd_w(char *args);
+
+static int cmd_d(char *args);
 
 static struct {
   const char *name;
@@ -57,7 +63,10 @@ static struct {
   { "q", "Exit NEMU", cmd_q },
   { "si", "step a single command with \"si N\"(if there is no N,N=1)",cmd_si },
   { "info","print infomation of register(r) or watchpoint(w) with \"info ...\"\nno argument:print all register and watchpoint\nargument is r:print all register\nregument is w:print all watchpoint",cmd_info},
-  { "x","scanf 4*N(32*N bit) from EXPR in memery (x N EXPR)",cmd_x}
+  {"p","print the value of EXPR by \"p EXPR\"\n",cmd_p},
+  {"x","scanf 4*N(32*N bit) from EXPR in memery (x N EXPR)",cmd_x},
+  {"w","set a watchpoint by \"w EXPR\".if EXPR is true,exe will stop\n",cmd_w},
+  {"d","delete the watchpoint by \"d EXPR\"\nif there are no EXPR,delete all watchpoint\n",cmd_d}
   /* TODO: Add more commands */
 
 };
@@ -114,19 +123,34 @@ static int cmd_si(char *args){
 static int cmd_info(char *args){
 	char*arg=strtok(NULL," ");
 	//no argument:print all register and watchpoint 
-	if(arg==NULL)
+	if(arg==NULL){
 	isa_reg_display();
+	show_wp();
+	}
 	//argument is r:print all register
 	else if(strcmp(arg,"r")==0)
 	isa_reg_display();
+	else if(strcmp(arg,"w")==0)
+	show_wp();
 	else printf("your argument is wrong\n");
 	//regument is w:print all watchpoint
 	
 	return 0;
 }
 
+static int cmd_p(char *args){
+	char *arg=strtok(NULL," ");
+	if(arg==NULL)return 0;
+	bool flag=true;
+	uint32_t EXPR=expr(arg,&flag);
+	if(flag==false){printf("EXPR wrong\n");return 0;}
+	printf("%s = %u\n",arg,EXPR);
+	return 0;
+}
+
 static int cmd_x(char *args){
 	char *arg[2];
+	
 	arg[0]=strtok(NULL," ");
 	if(arg[0]==NULL){
 	printf("please offer argument \"N\"\n");
@@ -138,6 +162,7 @@ static int cmd_x(char *args){
 	 if((tmpN-(int)tmpN)!=0){printf("EXPR can not be X.X\n");return 0;}
 	if(strcmp(end,"")==1){printf("please \"N\"\n");return 0;}
 	 int N=(int)tmpN;
+
 	arg[1]=strtok(NULL," ");
 	 long int EXPR;
 	if(arg[1]==NULL){
@@ -145,9 +170,13 @@ static int cmd_x(char *args){
 	int step=cpu.pc-2147483648;
 	EXPR=0x80000000+step;
 	}else{                        
-	 end=NULL;
-	EXPR=strtol(arg[1],&end,16);
-	if(strcmp(end,"")==1){printf("please \"EXPR 后不能有非法字符\"\n");return 0;}	
+	 //end=NULL;//原来的求值
+	//EXPR=strtol(arg[1],&end,16);
+	//if(strcmp(end,"")==1){printf("please \"EXPR 后不能有非法字符\"\n");return 0;}	
+	bool flag=true;
+	EXPR=expr(arg[1],&flag);//表达式求值
+        if(flag==false)
+	{printf("EXPR false!!\n");return 0;}
 	}
 	int n=0;
 	for(;n<N;n++){
@@ -167,6 +196,40 @@ static int cmd_x(char *args){
 	
 	//
 }
+
+static int cmd_w(char *args){
+	char *arg=strtok(NULL," ");	
+	if(arg==NULL){printf("please offer EXPR\n");return 0;}
+	
+	
+	if(init_wp(arg)==false)return 0;
+	
+
+	
+	return 0;
+}
+
+int cmd_d(char*args){
+	char*arg=strtok(NULL," ");
+	
+	if(arg==NULL)//没有给出EXPR,删除所有端点
+	{
+	for(int i=0;i<NR_WP;i++)
+	del_wp(i);
+	return 0;
+	}
+	//有EXPR]
+	bool flag=true;
+	uint32_t EXPR=expr(arg,&flag);
+	if(flag==false){printf("EXPR wrong!\n");return 0;}
+	//复用flag判断有没有这个断点
+	flag=del_wp(EXPR);
+	if(flag==false)printf("EXPR=%u,don`t have this watchpoint\n",EXPR);
+
+	return 0;
+	
+}
+
 void sdb_set_batch_mode() {
   is_batch_mode = true;
 }
@@ -222,7 +285,7 @@ void sdb_mainloop() {
     cmd_c(NULL);
     return;
   }
-	test_expr();//测试表达式结果
+	//test_expr();//测试表达式结果
 	
   for (char *str; (str = rl_gets()) != NULL; ) {
 	  char *str_end = str + strlen(str);

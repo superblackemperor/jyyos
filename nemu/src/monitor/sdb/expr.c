@@ -187,7 +187,7 @@ uint32_t eval(int p,int  q) {
      * Return the value of the number.
      */char *end;
 	double tmp=strtod(tokens[p].str,&end);
-	return (int)tmp;
+	return (uint)tmp;
   }
   else if (check_parentheses(p, q) == true) {
     /* The expression is surrounded by a matched pair of parentheses.
@@ -280,13 +280,13 @@ int strHtoint(char*str){
 	}
 	return ret;
 }
-void int2strD(char*str,int num){
+void int2strD(char*str,uint32_t num){
 	if(num==0)strcpy(str,"0");
 	char*tmp=(char*)malloc(50);//字符stack
 	memset(tmp,0,50);
 	char cat[2]={'\0'};
 	while(num!=0){
-	int mod=num%10;
+	uint32_t mod=num%10;
 	cat[0]=(char)(mod+48);
 	strcat(tmp,cat);
 	num-=mod;
