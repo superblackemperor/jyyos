@@ -264,15 +264,16 @@ int right_num=0,all_num=0;
         printf("%s %s\n",ans,exp);
         uint32_t answer=atoi(ans);
 	bool flag=true;
-       all_num++;
+       
         uint32_t ret=expr(exp,&flag);
         if(flag==false)
-        printf("false\n");
+	{printf("false\n");continue;}
         //else //printf("ret=%d\n",ret);
-        if(ret==answer)
+       	all_num++;
+	if(ret==answer)
                 right_num++;
 	else {
-	printf("ret:%d answer:%d\n",ret,answer);/*getchar();*/}
+	printf("ret:%d answer:%d\n",ret,answer);getchar();}
         }
         printf("(right_num/all_num):%d/%d\njust:%f%%\n",
         right_num,all_num,(float)right_num/(float)all_num*100);

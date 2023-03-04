@@ -12,7 +12,7 @@ void mystrcpy(char*dst,unsigned int len,char *in){
 		dst[i]=in[i];
 }
 bool isDeRefer();
-uint32_t eval(int p,int  q);
+uint32_t eval(int p,int  q,bool*success);
 bool check_parentheses(int p,int q);
 uint32_t mainop_posi(int p,int q);
 void strHtoD(char*str);
@@ -174,9 +174,9 @@ word_t expr(char *e, bool *success) {
 		assert(0);
 	}if(flag!=0)assert(0);
   /* TODO: Insert codes to evaluate the expression. */
-	return eval(0,nr_token-1);
+	return eval(0,nr_token-1,success);
 }
-uint32_t eval(int p,int  q) {
+uint32_t eval(int p,int  q,bool*success) {
   if (p > q) {
     /* Bad expression */
 	return -1;
@@ -193,20 +193,20 @@ uint32_t eval(int p,int  q) {
     /* The expression is surrounded by a matched pair of parentheses.
      * If that is the case, just throw away the parentheses.
      */
-    return eval(p + 1, q - 1);
+    return eval(p + 1, q - 1,success);
   }
   else {
     //the position of 主运算符 in the token expression;
     int op=mainop_posi(p,q);
-	int val1 = eval(p, op - 1);
-    int val2 = eval(op + 1, q);
+	int val1 = eval(p, op - 1,success);
+    int val2 = eval(op + 1, q,success);
 
     switch (tokens[op].type) {
       case '+': return val1 + val2;
       case '-': return val1-val2;
       case '*': return val1*val2;
       case '/': 
-		if(val2==0)return (uint32_t)-1;
+		if(val2==0){*success=false;return (uint32_t)-1;}
 		return (uint32_t)(val1/val2);
       case TK_EQ:return val1==val2;
 	case TK_NOEQ:return val1!=val2;
@@ -233,8 +233,11 @@ uint32_t mainop_posi(int p,int q){
 	int ret=p;
 	int i=p;
 	for(;i<=q;){
-	if(tokens[i].type>=TK_EQ&&tokens[i].type<=TK_AND)
-	{ret=i++;
+	if(tokens[i].type==TK_AND)ret=i++;
+	if(tokens[i].type==TK_EQ||tokens[i].type==TK_NOEQ)
+	{
+		if(tokens[ret].type!=TK_AND)
+		ret=i++;
 	}
 	if(tokens[i].type=='+'||tokens[i].type=='-')
 	{
