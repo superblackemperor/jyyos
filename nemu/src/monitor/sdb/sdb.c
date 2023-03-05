@@ -165,7 +165,7 @@ static int cmd_x(char *args){
 
 	arg[1]=args+strlen(arg[0]);
 	 long int EXPR;
-	if(arg[1]==NULL){
+	if(strcmp(arg[1],"")==0){
 	//printf("please off argument \"EXPR\"\n");//可以缺省，表示当前指向address
 	int step=cpu.pc-2147483648;
 	EXPR=0x80000000+step;
