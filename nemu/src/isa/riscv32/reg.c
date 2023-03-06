@@ -12,7 +12,7 @@ const char *regs[] = {
 void isa_reg_display() {
 	int i=0;
 	for(;i<32;i++){
-	printf(" <%s=%d> ",regs[i],cpu.gpr[i]._32);
+	printf(" <%s=%x> ",regs[i],cpu.gpr[i]._32);
 	if((i+1)%8==0)
 	printf("\n");
 	}printf("\nPC = %xH\n",cpu.pc);
