@@ -60,3 +60,9 @@ def_EHelper(sll){
 def_EHelper(and){
 	rtl_and(s,ddest,dsrc1,dsrc2);
 }
+def_EHelper(mul){
+	rtl_mulu_lo(s,ddest,dsrc1,dsrc2);//无符号的,不用扩展
+}
+def_EHelper(div){
+	rtl_divs_q(s,ddest,dsrc1,dsrc2);//需要符号扩展，但是同为32，就处理不处理都一样
+}

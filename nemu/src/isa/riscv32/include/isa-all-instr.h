@@ -7,7 +7,7 @@
 	f(sw) f(sh) f(sb)/*S store*/  \
 	f(addi) f(ani) f(sltiu) f(srai) f(srli) f(xori)/*I arith_imm*/ \
         f(add) f(sub) f(sltu) f(xor) f(or) f(sll) f(and) \
-	f(mul)/*R arith_reg*/ \
+	f(mul) f(div)/*R arith_reg*/ \
 	f(inv) f(nemu_trap)
 
 def_all_EXEC_ID();
