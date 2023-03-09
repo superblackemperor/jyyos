@@ -25,3 +25,7 @@ def_EHelper(bge){
 	if(*dsrc1>=*dsrc2)
 	  s->dnpc=cpu.pc+id_dest->simm;
 }
+def_EHelper(blt){
+	if(*dsrc1<*dsrc2)
+	s->dnpc=cpu.pc+id_dest->simm;
+}

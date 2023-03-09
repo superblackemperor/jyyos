@@ -121,6 +121,6 @@ void free_wp(WP*p){//归还wp给free_，然后把head表连回去
 
 void show_wp(){
 	for(WP*it=head;it!=NULL;it=it->next)
-	printf("watchpoint %d:%s    <current value=%u>\n",
+	printf("watchpoint %d:%s    <current value=%xH>\n",
 	it->NO,it->EXPR,it->new_value);
 }

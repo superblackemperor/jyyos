@@ -150,7 +150,6 @@ static int cmd_p(char *args){
 
 static int cmd_x(char *args){
 	char *arg[2];
-	
 	arg[0]=strtok(NULL," ");
 	if(arg[0]==NULL){
 	printf("please offer argument \"N\"\n");
@@ -163,12 +162,14 @@ static int cmd_x(char *args){
 	if(strcmp(end,"")==1){printf("please \"N\"\n");return 0;}
 	 int N=(int)tmpN;
 
-	arg[1]=args+strlen(arg[0]);
+	arg[1]=arg[0]+strlen(arg[0])+1;
 	 long int EXPR;
 	if(strcmp(arg[1],"")==0){
 	//printf("please off argument \"EXPR\"\n");//可以缺省，表示当前指向address
-	int step=cpu.pc-2147483648;
-	EXPR=0x80000000+step;
+	//int step=cpu.pc-2147483648;
+	//EXPR=0x80000000+step;
+	printf("%s\n",arg[1]);
+	EXPR=cpu.pc;
 	}else{                        
 	 //end=NULL;//原来的求值
 	//EXPR=strtol(arg[1],&end,16);

@@ -23,7 +23,7 @@ def_EHelper(addi){
 //无符号数加有符号数结果是无符号数，如果立即数是负数，那会不会造成错误？？不过我认为编译器应该会把加上一个负数转化为减去一个正数，所以不用担心会加上一个负数
 }
 def_EHelper(sltiu){
-	rtl_setrelopi(s,RELOP_LTU,ddest,dsrc1,id_src2->imm);
+	rtl_setrelopi(s,RELOP_LT,ddest,dsrc1,id_src2->imm);//在if-else.c的测试中把他改成了有符号比较了
 }
 def_EHelper(srai){
 	rtl_srai(s,ddest,dsrc1,id_src2->imm);
@@ -66,3 +66,9 @@ def_EHelper(mul){
 def_EHelper(div){
 	rtl_divs_q(s,ddest,dsrc1,dsrc2);//需要符号扩展，但是同为32，就处理不处理都一样
 }
+def_EHelper(rem){
+	rtl_divs_r(s,ddest,dsrc1,dsrc2);//需要符号位扩展，取模
+}
+def_EHelper(slt){
+	rtl_setrelop(s,RELOP_LT,ddest,dsrc1,dsrc2);
+}	
