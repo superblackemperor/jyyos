@@ -232,7 +232,7 @@ int cmd_d(char*args){
 }
 
 void sdb_set_batch_mode() {
-  is_batch_mode = false;
+  is_batch_mode = true;
 }
 void test_expr(){
 int right_num=0,all_num=0;
