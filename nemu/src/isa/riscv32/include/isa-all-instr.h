@@ -2,7 +2,7 @@
 #include "../local-include/rtl.h"
 
 #define INSTR_LIST(f) f(lui) f(auipc) f(jal) f(jalr) \
-	f(beq) f(bne) f(bge) f(blt) f(bltu)/*B jump*/ \
+	f(beq) f(bne) f(bge) f(blt) f(bltu) f(bgeu)/*B jump*/ \
 	f(lw) f(lbu) f(lh) f(lhu)/*I load*/ \
 	f(sw) f(sh) f(sb)/*S store*/  \
 	f(addi) f(andi) f(sltiu) f(srai) f(srli) f(xori) f(slli)/*I arith_imm*/ \

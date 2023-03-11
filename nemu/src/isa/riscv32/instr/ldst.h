@@ -28,7 +28,7 @@ def_EHelper(sb){
 }
 //下面是I的算术指令
 def_EHelper(addi){
-	rtl_addi(s,ddest,dsrc1,id_src2->imm);
+	rtl_addi(s,ddest,dsrc1,id_src2->simm);
 //无符号数加有符号数结果是无符号数，如果立即数是负数，那会不会造成错误？？不过我认为编译器应该会把加上一个负数转化为减去一个正数，所以不用担心会加上一个负数
 }
 def_EHelper(sltiu){

@@ -1,6 +1,3 @@
-#include <am.h>
-#include <klib.h>
-#include <klib-macros.h>
 #include <stdarg.h>
 #include <stdint.h>
 #if !defined(__ISA_NATIVE__) || defined(__NATIVE_USE_KLIB__)
@@ -35,15 +32,15 @@ void int2strD(char*str,int32_t num){
         //free(tmp);                                                                                                                                           
 }    
 
-int printf(const char *fmt, ...) {
+/*int printf(const char *fmt, ...) {
   panic("Not implemented");
 }
 
 int vsprintf(char *out, const char *fmt, va_list ap) {
   panic("Not implemented");
 }
-
-int sprintf(char *out, const char *fmt, ...) {
+*/
+int mysprintf(char *out, const char *fmt, ...) {
  // panic("Not implemented");
 	strcpy(out,"");
 	va_list ap;
@@ -75,12 +72,12 @@ int sprintf(char *out, const char *fmt, ...) {
 	return 1;
 }
 
-int snprintf(char *out, size_t n, const char *fmt, ...) {
+/*int snprintf(char *out, size_t n, const char *fmt, ...) {
   panic("Not implemented");
 }
 
 int vsnprintf(char *out, size_t n, const char *fmt, va_list ap) {
   panic("Not implemented");
 }
-
+*/
 #endif
